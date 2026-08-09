@@ -35,6 +35,8 @@
               <span class="card-rating">91</span><span class="card-role">ESTRATEGA</span><img data-chroma src="/assets/selector-poncho-source.png" alt="Poncho de frente y con los brazos cruzados" /><span><strong>PONCHO</strong><small>POLERÓN AZUL MARINO</small></span>
             </button>
           </div>
+          <div class="team-selector" role="group" aria-label="Jugador a seleccionar"><button class="team-option selected" data-team="player">JUGADOR 1</button><button class="team-option" data-team="rival">RIVAL</button><span id="selectionHint">Seleccionando: BERNARDO</span></div>
+          <div class="team-selector" role="group" aria-label="Modo de juego"><button class="team-option selected" data-mode="cpu">VS CPU</button><button class="team-option" data-mode="local">2 JUGADORES</button><span id="modeHint">J2: J/L mover · I saltar · O patear · P cabecear</span></div>
           <section class="ball-picker" aria-label="Selección de balón">
             <p class="picker-title">ELIGE TU BALÓN</p>
             <div class="ball-grid">
@@ -58,6 +60,10 @@
               <option value="rv8G30H5hzI">Matador</option>
               <option value="FVdjZYfDuLE">Wonderwall</option>
               <option value="OV5_LQArLa0">You'll Never Walk Alone</option>
+              <option value="8jVw1LRT-jg">Ya llegó el domingo</option>
+              <option value="EXXnVMmppRo">Gracias a la vida por ser Cruzado</option>
+              <option value="6nGWuSMp6Lg">Salta la Garra Blanca descontrolada</option>
+              <option value="8RsvWNX4NFg">Campeón hay uno solo</option>
             </select>
             <small class="music-note">Se reproduce desde el reproductor oficial de YouTube al iniciar el partido.</small>
           </section>
@@ -65,7 +71,7 @@
           <div class="instructions"><span>← → o A D <b>Mover</b></span><span>↑ / W <b>Saltar</b></span><span>ESPACIO <b>Patear / volea</b></span><span>F <b>Cabecear</b></span><span>S <b>Barrida</b></span><span>E <b>Amague</b></span><span>Q <b>Control de pecho</b></span></div>
         </div>
         <div id="gameScreen" class="game-screen hidden">
-          <div class="scoreboard"><div><small id="leftName">BERNARDO</small><strong id="leftScore">0</strong></div><div class="timer" id="timer">01:30</div><div><small>RIVAL</small><strong id="rightScore">0</strong></div></div>
+          <div class="scoreboard"><div><small id="leftName">BERNARDO</small><strong id="leftScore">0</strong></div><div class="timer" id="timer">01:30</div><div><small id="rightName">PATITO</small><strong id="rightScore">0</strong></div></div>
           <canvas id="game" width="1280" height="720" aria-label="Cancha de fútbol jugable"></canvas>
           <div class="game-hint">Espacio: patear / volea · F: cabecear · S: barrida · E: amague · Q: control de pecho</div>
           <div class="touch-controls" aria-label="Controles táctiles"><div><button data-key="left">←</button><button data-key="right">→</button></div><div><button data-key="jump">↑</button><button data-key="head" class="head">◉</button><button data-key="kick" class="kick">⚽</button><button data-key="slide">⇢</button><button data-key="chest">Q</button></div></div>

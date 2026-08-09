@@ -6,6 +6,7 @@ const startScreen = document.querySelector('#startScreen');
 const gameScreen = document.querySelector('#gameScreen');
 const resultScreen = document.querySelector('#resultScreen');
 const leftName = document.querySelector('#leftName');
+const rightName = document.querySelector('#rightName');
 const leftScore = document.querySelector('#leftScore');
 const rightScore = document.querySelector('#rightScore');
 const timerEl = document.querySelector('#timer');
@@ -13,10 +14,11 @@ const soundButton = document.querySelector('#soundButton');
 const musicSelect = document.querySelector('#musicSelect');
 let playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, ballSkin;
 const keys = { left: false, right: false, jump: false, kick: false, head: false, slide: false, feint: false, chest: false };
+const keys2 = { left: false, right: false, jump: false, kick: false, head: false, slide: false, feint: false, chest: false };
 const W = 1280, H = 720, ground = 668;
 const PLAYER_SIZE = 220, PLAYER_DRAW_WIDTH = 220, PLAYER_HEAD_Y = 47;
 const BALL_RADIUS = 20, BALL_DRAW_SIZE = 52;
-let selected = 'bernardo', selectedBall = 'telstar', selectedEnvironment = 'torreon', running = false, last = 0, timeLeft = 90, score = [0, 0], kickoff = 0, goalMoment = null;
+let selected = 'bernardo', selectedRival = 'patito', selectionTarget = 'player', localMultiplayer = false, selectedBall = 'telstar', selectedEnvironment = 'torreon', running = false, last = 0, timeLeft = 90, score = [0, 0], kickoff = 0, goalMoment = null;
 let player, cpu, ball;
 let audioContext, soundEnabled = false, lastBounceSound = 0, lastFrameSound = 0;
 let youtubePlayer, youtubeApiReady = false, pendingMusicStart = false;
@@ -41,7 +43,7 @@ const characterData = {
   'patito-classic': { name: 'PATITO CLASSIC', sheet: '/assets/patito-classic-sprites-v3.png', actionSheet: '/assets/patito-classic-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
   'carlitos-run': { name: 'CARLITOS RUN', sheet: '/assets/carlitos-run-sprites-v1.png', actionSheet: '/assets/carlitos-run-action-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
   felo: { name: 'FELO', sheet: '/assets/felo-sprites-v3.png', actionSheet: '/assets/felo-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
-  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v1.png', actionSheet: '/assets/poncho-action-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 }
+  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v2.png', actionSheet: '/assets/poncho-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 }
 };
 const ballSkins = {
   cuero: '/assets/balls/cuero.png', telstar: '/assets/balls/telstar.png', tango: '/assets/balls/tango.png', azteca: '/assets/balls/azteca.png',
@@ -114,7 +116,7 @@ function sfx(name) {
 
 function resetPositions() {
   const playerData = characterData[selected];
-  const rivalData = selected === 'bernardo' ? characterData.patito : characterData.bernardo;
+  const rivalData = characterData[selectedRival];
   player = createPlayer(245, 1, playerData);
   cpu = createPlayer(1035, -1, rivalData);
   ball = { x: W / 2, y: 360, vx: 0, vy: 0, r: BALL_RADIUS, spin: 0, trail: [] };
@@ -155,11 +157,12 @@ async function prepareSelectionImages() {
 async function startGame() {
   if (soundEnabled) audio();
   const data = characterData[selected];
-  const rivalData = selected === 'bernardo' ? characterData.patito : characterData.bernardo;
+  const rivalData = characterData[selectedRival];
   [playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, ballSkin] = await Promise.all([
     chromaSprite(data.sheet), chromaSprite(rivalData.sheet), chromaSprite(data.actionSheet), chromaSprite(rivalData.actionSheet), chromaSprite(ballSkins[selectedBall])
   ]);
   leftName.textContent = data.name;
+  rightName.textContent = rivalData.name;
   score = [0, 0]; timeLeft = 90; last = performance.now(); running = true;
   startScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); gameScreen.classList.remove('hidden');
   resetPositions(); startMusic(); sfx('whistle'); requestAnimationFrame(loop);
@@ -183,7 +186,7 @@ function update(dt) {
   timeLeft = Math.max(0, timeLeft - dt);
   const secs = Math.ceil(timeLeft); timerEl.textContent = `0${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   if (!timeLeft) return finish();
-  controlPlayer(dt); controlCpu(dt); physics(player, dt); physics(cpu, dt); ballPhysics(dt);
+  controlPlayer(dt); if (localMultiplayer) controlSecondPlayer(dt); else controlCpu(dt); physics(player, dt); physics(cpu, dt); ballPhysics(dt);
 }
 
 function physics(p, dt) {
@@ -197,15 +200,21 @@ function physics(p, dt) {
   p.phase += Math.abs(p.vx) * dt / 58; p.landing = Math.max(0, p.landing - dt * 5);
 }
 function controlPlayer(dt) {
-  if (player.stun > 0 || player.slide > 0 || player.feint > 0) return;
+  controlHuman(player, keys, dt, 1.15);
+}
+function controlSecondPlayer(dt) {
+  controlHuman(cpu, keys2, dt, 1.08);
+}
+function controlHuman(actor, input, dt, power) {
+  if (actor.stun > 0 || actor.slide > 0 || actor.feint > 0) return;
   const speed = 450;
-  if (keys.left) { player.vx = -speed; player.dir = -1; } else if (keys.right) { player.vx = speed; player.dir = 1; } else player.vx *= Math.pow(.001, dt);
-  if (keys.jump && player.y >= ground - 113) player.vy = -710;
-  if (keys.slide && player.actionCooldown <= 0) slideTackle(player);
-  if (keys.feint && player.actionCooldown <= 0) feint(player);
-  if (keys.chest && player.actionCooldown <= 0) chestControl(player);
-  if (keys.kick && player.kick <= 0) kick(player, 1.15);
-  if (keys.head && player.head <= 0) headBall(player, 1.18);
+  if (input.left) { actor.vx = -speed; actor.dir = -1; } else if (input.right) { actor.vx = speed; actor.dir = 1; } else actor.vx *= Math.pow(.001, dt);
+  if (input.jump && actor.y >= ground - 113) actor.vy = -710;
+  if (input.slide && actor.actionCooldown <= 0) slideTackle(actor);
+  if (input.feint && actor.actionCooldown <= 0) feint(actor);
+  if (input.chest && actor.actionCooldown <= 0) chestControl(actor);
+  if (input.kick && actor.kick <= 0) kick(actor, power);
+  if (input.head && actor.head <= 0) headBall(actor, power);
 }
 function controlCpu(dt) {
   if (cpu.stun > 0 || cpu.slide > 0 || cpu.feint > 0) return;
@@ -408,13 +417,19 @@ function draw() { field(); drawPlayer(player, playerSheet, playerActionSheet);dr
 function loop(now) { if(!running) return; const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();if(running)requestAnimationFrame(loop); }
 function finish() { running=false; stopMusic(); gameScreen.classList.add('hidden');resultScreen.classList.remove('hidden'); const title=score[0]>score[1]?'¡Ganaste!':score[0]===score[1]?'¡Empate!':'¡Casi!';document.querySelector('#resultTitle').textContent=title;document.querySelector('#resultScore').textContent=`${score[0]} — ${score[1]}`; }
 
-document.querySelectorAll('.character').forEach(button => button.addEventListener('click', () => { selected=button.dataset.player;document.querySelectorAll('.character').forEach(b=>b.classList.toggle('selected',b===button)); }));
+function renderCharacterSelection() {
+  document.querySelectorAll('.character').forEach(button => button.classList.toggle('selected', button.dataset.player === (selectionTarget === 'player' ? selected : selectedRival)));
+  document.querySelector('#selectionHint').textContent = `Seleccionando: ${characterData[selectionTarget === 'player' ? selected : selectedRival].name}`;
+}
+document.querySelectorAll('[data-team]').forEach(button => button.addEventListener('click', () => { selectionTarget = button.dataset.team; document.querySelectorAll('[data-team]').forEach(b => b.classList.toggle('selected', b === button)); renderCharacterSelection(); }));
+document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => { localMultiplayer = button.dataset.mode === 'local'; document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('selected', b === button)); document.querySelector('#modeHint').textContent = localMultiplayer ? 'J2: J/L mover · I saltar · O patear · P cabecear · K barrida' : 'El rival será controlado por la CPU'; }));
+document.querySelectorAll('.character').forEach(button => button.addEventListener('click', () => { const choice = button.dataset.player; if (selectionTarget === 'player') { if (choice === selectedRival) selectedRival = selected; selected = choice; } else { if (choice === selected) selected = selectedRival; selectedRival = choice; } renderCharacterSelection(); }));
 document.querySelectorAll('.ball-option').forEach(button => button.addEventListener('click', () => { selectedBall=button.dataset.ball;document.querySelectorAll('.ball-option').forEach(b=>b.classList.toggle('selected',b===button)); }));
 document.querySelectorAll('.environment-option').forEach(button => button.addEventListener('click', () => { selectedEnvironment=button.dataset.environment;document.querySelectorAll('.environment-option').forEach(b=>b.classList.toggle('selected',b===button)); }));
 musicSelect.addEventListener('change', () => { if (musicSelect.value === 'none') stopMusic(); else if (youtubeApiReady) createYoutubePlayer(); });
 soundButton.addEventListener('click', () => { soundEnabled = !soundEnabled; if (soundEnabled) { audio(); sfx('whistle'); } soundButton.textContent = soundEnabled ? '♫' : '♩'; soundButton.setAttribute('aria-label', soundEnabled ? 'Silenciar sonido' : 'Activar sonido'); soundButton.classList.toggle('active', soundEnabled); });
 document.querySelector('#playButton').addEventListener('click', startGame);document.querySelector('#againButton').addEventListener('click', startGame);
-window.addEventListener('keydown', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest'};if(m[e.key]){keys[m[e.key]]=true;e.preventDefault();} });
-window.addEventListener('keyup', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest'};if(m[e.key])keys[m[e.key]]=false; });
+window.addEventListener('keydown', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest'};if(m[e.key]){keys[m[e.key]]=true;e.preventDefault();}if(localMultiplayer&&m2[e.key]){keys2[m2[e.key]]=true;e.preventDefault();} });
+window.addEventListener('keyup', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest'};if(m[e.key])keys[m[e.key]]=false;if(m2[e.key])keys2[m2[e.key]]=false; });
 document.querySelectorAll('[data-key]').forEach(b=>{const key=b.dataset.key;['pointerdown','pointerup','pointerleave','pointercancel'].forEach(event=>b.addEventListener(event,e=>{keys[key]=event==='pointerdown';e.preventDefault();}));});
 prepareSelectionImages();
