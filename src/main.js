@@ -53,6 +53,10 @@ const dreamsBackground = new Image();
 dreamsBackground.src = '/assets/background-dreams-illustrated.png';
 const kunstmannBackground = new Image();
 kunstmannBackground.src = '/assets/background-kunstmann-illustrated.png';
+const monumentalBackground = new Image();
+monumentalBackground.src = '/assets/background-monumental-illustrated.png';
+const claroArenaBackground = new Image();
+claroArenaBackground.src = '/assets/background-claro-arena-illustrated.png';
 
 const characterData = {
   bernardo: { name: 'BERNARDO', sheet: '/assets/bernardo-sprites-v3.png', actionSheet: '/assets/bernardo-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
@@ -415,7 +419,7 @@ function collideRod(x1, y1, x2, y2) {
   if (performance.now() - lastFrameSound > 90) { sfx('frame'); lastFrameSound = performance.now(); }
 }
 function field() {
-  const environmentImage = selectedEnvironment === 'torreon' ? torreonBackground : selectedEnvironment === 'hospital' ? hospitalBackground : selectedEnvironment === 'costanera' ? costaneraBackground : selectedEnvironment === 'plaza' ? plazaBackground : selectedEnvironment === 'jardin' ? jardinBackground : selectedEnvironment === 'coliseo' ? coliseoBackground : selectedEnvironment === 'dreams' ? dreamsBackground : selectedEnvironment === 'kunstmann' ? kunstmannBackground : null;
+  const environmentImage = selectedEnvironment === 'torreon' ? torreonBackground : selectedEnvironment === 'hospital' ? hospitalBackground : selectedEnvironment === 'costanera' ? costaneraBackground : selectedEnvironment === 'plaza' ? plazaBackground : selectedEnvironment === 'jardin' ? jardinBackground : selectedEnvironment === 'coliseo' ? coliseoBackground : selectedEnvironment === 'dreams' ? dreamsBackground : selectedEnvironment === 'kunstmann' ? kunstmannBackground : selectedEnvironment === 'monumental' ? monumentalBackground : selectedEnvironment === 'claro-arena' ? claroArenaBackground : null;
   if (environmentImage?.complete) ctx.drawImage(environmentImage, 0, 0, W, H);
   else { const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#0e5d45'); sky.addColorStop(1, '#08342d'); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#d9bf79'; ctx.fillRect(0, 230, W, 70); }
   drawGoal(goal.leftLine, -1); drawGoal(goal.rightLine, 1);
