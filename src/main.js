@@ -20,6 +20,7 @@ const powerFill2 = document.querySelector('#powerFill2');
 const powerName2 = document.querySelector('#powerName2');
 const soundButton = document.querySelector('#soundButton');
 const musicSelect = document.querySelector('#musicSelect');
+const musicStartButton = document.querySelector('#musicStartButton');
 let playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, ballSkin;
 const keys = { left: false, right: false, jump: false, kick: false, head: false, slide: false, feint: false, chest: false, special: false };
 const keys2 = { left: false, right: false, jump: false, kick: false, head: false, slide: false, feint: false, chest: false, special: false };
@@ -103,7 +104,7 @@ function createYoutubePlayer() {
   youtubePlayer = new window.YT.Player('youtubePlayer', {
     width: 200, height: 200, videoId,
     playerVars: { autoplay: 0, controls: 0, playsinline: 1, rel: 0, modestbranding: 1 },
-    events: { onReady: event => { event.target.setVolume(32); event.target.cueVideoById(musicSelect.value); if (pendingMusicStart) startMusic(); } }
+    events: { onReady: event => { event.target.setVolume(32); event.target.cueVideoById(musicSelect.value); if (pendingMusicStart) startMusic(); }, onStateChange: event => { if (event.data === window.YT.PlayerState.PLAYING) musicStartButton.classList.add('hidden'); } }
   });
 }
 function startMusic() {
@@ -195,6 +196,7 @@ async function prepareSelectionImages() {
 
 async function startGame() {
   if (soundEnabled) audio();
+  startMusic();
   const data = characterData[selected];
   const rivalData = characterData[selectedRival];
   [playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, ballSkin] = await Promise.all([
@@ -203,8 +205,8 @@ async function startGame() {
   leftName.textContent = data.name;
   rightName.textContent = rivalData.name;
   clearTimeout(replaySafetyTimeout); replaySafetyTimeout = null; score = [0, 0]; matchStats = { shots: [0, 0] }; specialPower = 0; specialPower2 = 0; updatePowerMeter(); updatePowerMeter2(); powerMeter2.classList.toggle('hidden', !localMultiplayer); timeLeft = 90; replay = null; replayFrames.length = 0; cameraPulse = 0; scoreboard.classList.remove('hidden'); gameScreen.classList.remove('replay-active'); skipReplayButton.classList.add('hidden'); last = performance.now(); running = true;
-  startScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); gameScreen.classList.remove('hidden');
-  resetPositions(); startMusic(); sfx('whistle'); requestAnimationFrame(loop);
+  startScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); gameScreen.classList.remove('hidden'); musicStartButton.classList.toggle('hidden', musicSelect.value === 'none');
+  resetPositions(); sfx('whistle'); requestAnimationFrame(loop);
 }
 
 function addGoal(who) {
@@ -517,7 +519,7 @@ function draw() {
 }
 function loop(now) { if(!running) return; const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();if(running)requestAnimationFrame(loop); }
 function finish() { running=false; stopMusic(); gameScreen.classList.add('hidden');resultScreen.classList.remove('hidden'); const title=score[0]>score[1]?'¡Ganaste!':score[0]===score[1]?'¡Empate!':'¡Casi!';document.querySelector('#resultTitle').textContent=title;document.querySelector('#resultScore').textContent=`${score[0]} — ${score[1]}`;document.querySelector('#playerShots').textContent=matchStats.shots[0];document.querySelector('#rivalShots').textContent=matchStats.shots[1];document.querySelector('#playerGoals').textContent=score[0];document.querySelector('#rivalGoals').textContent=score[1]; }
-function returnToMenu() { running=false; stopMusic(); clearTimeout(replaySafetyTimeout); replaySafetyTimeout=null; goalMoment=null; replay=null; replayFrames.length=0; kickoff=0; scoreboard.classList.remove('hidden'); gameScreen.classList.remove('replay-active'); skipReplayButton.classList.add('hidden'); Object.keys(keys).forEach(key=>keys[key]=false); Object.keys(keys2).forEach(key=>keys2[key]=false); gameScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); }
+function returnToMenu() { running=false; stopMusic(); clearTimeout(replaySafetyTimeout); replaySafetyTimeout=null; goalMoment=null; replay=null; replayFrames.length=0; kickoff=0; scoreboard.classList.remove('hidden'); gameScreen.classList.remove('replay-active'); musicStartButton.classList.add('hidden'); skipReplayButton.classList.add('hidden'); Object.keys(keys).forEach(key=>keys[key]=false); Object.keys(keys2).forEach(key=>keys2[key]=false); gameScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); }
 
 function renderCharacterSelection() {
   document.querySelectorAll('.character').forEach(button => button.classList.toggle('selected', button.dataset.player === (selectionTarget === 'player' ? selected : selectedRival)));
@@ -529,9 +531,9 @@ document.querySelectorAll('[data-replay]').forEach(button => button.addEventList
 document.querySelectorAll('.character').forEach(button => button.addEventListener('click', () => { const choice = button.dataset.player; if (selectionTarget === 'player') { if (choice === selectedRival) selectedRival = selected; selected = choice; } else { if (choice === selected) selected = selectedRival; selectedRival = choice; } renderCharacterSelection(); }));
 document.querySelectorAll('.ball-option').forEach(button => button.addEventListener('click', () => { selectedBall=button.dataset.ball;document.querySelectorAll('.ball-option').forEach(b=>b.classList.toggle('selected',b===button)); }));
 document.querySelectorAll('.environment-option').forEach(button => button.addEventListener('click', () => { selectedEnvironment=button.dataset.environment;document.querySelectorAll('.environment-option').forEach(b=>b.classList.toggle('selected',b===button)); }));
-musicSelect.addEventListener('change', () => { if (musicSelect.value === 'none') stopMusic(); else if (youtubeApiReady) createYoutubePlayer(); });
+musicSelect.addEventListener('change', () => { if (musicSelect.value === 'none') stopMusic(); else if (youtubeApiReady) createYoutubePlayer(); musicStartButton.classList.toggle('hidden', musicSelect.value === 'none'); });
 soundButton.addEventListener('click', () => { soundEnabled = !soundEnabled; if (soundEnabled) { audio(); sfx('whistle'); } soundButton.textContent = soundEnabled ? '♫' : '♩'; soundButton.setAttribute('aria-label', soundEnabled ? 'Silenciar sonido' : 'Activar sonido'); soundButton.classList.toggle('active', soundEnabled); });
-document.querySelector('#playButton').addEventListener('click', startGame);document.querySelector('#againButton').addEventListener('click', startGame);document.querySelector('#cancelGameButton').addEventListener('click', returnToMenu);document.querySelector('#menuButton').addEventListener('click', returnToMenu);skipReplayButton.addEventListener('click', endReplay);
+document.querySelector('#playButton').addEventListener('click', startGame);document.querySelector('#againButton').addEventListener('click', startGame);document.querySelector('#cancelGameButton').addEventListener('click', returnToMenu);document.querySelector('#menuButton').addEventListener('click', returnToMenu);musicStartButton.addEventListener('click', startMusic);skipReplayButton.addEventListener('click', endReplay);
 window.addEventListener('keydown', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest',r:'special',R:'special'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest',h:'special',H:'special'};if(m[e.key]){keys[m[e.key]]=true;e.preventDefault();}if(localMultiplayer&&m2[e.key]){keys2[m2[e.key]]=true;e.preventDefault();} });
 window.addEventListener('keyup', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest',r:'special',R:'special'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest',h:'special',H:'special'};if(m[e.key])keys[m[e.key]]=false;if(m2[e.key])keys2[m2[e.key]]=false; });
 document.querySelectorAll('[data-key]').forEach(b=>{const key=b.dataset.key;['pointerdown','pointerup','pointerleave','pointercancel'].forEach(event=>b.addEventListener(event,e=>{keys[key]=event==='pointerdown';e.preventDefault();}));});
