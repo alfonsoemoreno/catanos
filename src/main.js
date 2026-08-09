@@ -43,7 +43,8 @@ const characterData = {
   'patito-classic': { name: 'PATITO CLASSIC', sheet: '/assets/patito-classic-sprites-v3.png', actionSheet: '/assets/patito-classic-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
   'carlitos-run': { name: 'CARLITOS RUN', sheet: '/assets/carlitos-run-sprites-v1.png', actionSheet: '/assets/carlitos-run-action-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
   felo: { name: 'FELO', sheet: '/assets/felo-sprites-v3.png', actionSheet: '/assets/felo-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
-  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v2.png', actionSheet: '/assets/poncho-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 }
+  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v2.png', actionSheet: '/assets/poncho-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  gaspar: { name: 'GASPAR', sheet: '/assets/gaspar-sprites-v1-clean.png', actionSheet: '/assets/gaspar-action-sprites-v2-clean.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0 }
 };
 const ballSkins = {
   cuero: '/assets/balls/cuero.png', telstar: '/assets/balls/telstar.png', tango: '/assets/balls/tango.png', azteca: '/assets/balls/azteca.png',
