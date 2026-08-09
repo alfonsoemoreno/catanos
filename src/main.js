@@ -36,10 +36,12 @@ const coliseoBackground = new Image();
 coliseoBackground.src = '/assets/background-coliseo-valdivia.png';
 
 const characterData = {
-  bernardo: { name: 'BERNARDO', sheet: '/assets/capitan-sprites-v2.png', actionSheet: '/assets/bernardo-action-sprites-v1.png', artFacing: 1 },
-  patito: { name: 'PATITO', sheet: '/assets/jefe-sprites-v2.png', actionSheet: '/assets/patito-action-sprites-v1.png', artFacing: -1 },
-  'patito-classic': { name: 'PATITO CLASSIC', sheet: '/assets/patito-classic-sprites-v2.png', actionSheet: '/assets/patito-classic-action-sprites-v1.png', artFacing: -1 },
-  'carlitos-run': { name: 'CARLITOS RUN', sheet: '/assets/carlitos-run-sprites-v1.png', actionSheet: '/assets/carlitos-run-action-sprites-v1.png', artFacing: 1 }
+  bernardo: { name: 'BERNARDO', sheet: '/assets/bernardo-sprites-v3.png', actionSheet: '/assets/bernardo-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  patito: { name: 'PATITO', sheet: '/assets/patito-sprites-v3.png', actionSheet: '/assets/patito-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
+  'patito-classic': { name: 'PATITO CLASSIC', sheet: '/assets/patito-classic-sprites-v3.png', actionSheet: '/assets/patito-classic-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
+  'carlitos-run': { name: 'CARLITOS RUN', sheet: '/assets/carlitos-run-sprites-v1.png', actionSheet: '/assets/carlitos-run-action-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  felo: { name: 'FELO', sheet: '/assets/felo-sprites-v3.png', actionSheet: '/assets/felo-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v1.png', actionSheet: '/assets/poncho-action-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 }
 };
 const ballSkins = {
   cuero: '/assets/balls/cuero.png', telstar: '/assets/balls/telstar.png', tango: '/assets/balls/tango.png', azteca: '/assets/balls/azteca.png',
@@ -113,14 +115,14 @@ function sfx(name) {
 function resetPositions() {
   const playerData = characterData[selected];
   const rivalData = selected === 'bernardo' ? characterData.patito : characterData.bernardo;
-  player = createPlayer(245, 1, playerData.artFacing);
-  cpu = createPlayer(1035, -1, rivalData.artFacing);
+  player = createPlayer(245, 1, playerData);
+  cpu = createPlayer(1035, -1, rivalData);
   ball = { x: W / 2, y: 360, vx: 0, vy: 0, r: BALL_RADIUS, spin: 0, trail: [] };
   kickoff = 1.1;
 }
 
-function createPlayer(x, dir, artFacing) {
-  return { x, y: ground - 112, vx: 0, vy: 0, dir, kick: 0, head: 0, headContact: 0, stun: 0, hit: 0, phase: 0, landing: 0, artFacing, celebrate: false, defeat: false, slide: 0, feint: 0, chest: 0, aerial: 0, fall: 0, recover: 0, actionCooldown: 0 };
+function createPlayer(x, dir, data) {
+  return { x, y: ground - 112, vx: 0, vy: 0, dir, kick: 0, head: 0, headContact: 0, stun: 0, hit: 0, phase: 0, landing: 0, artFacing: data.artFacing, baseSpriteInset: data.baseSpriteInset ?? 0, actionSpriteInset: data.actionSpriteInset ?? 0, actionFacing: data.actionFacing ?? [1, 1, 1, 1], celebrate: false, defeat: false, slide: 0, feint: 0, chest: 0, aerial: 0, fall: 0, recover: 0, actionCooldown: 0 };
 }
 
 function chromaSprite(source) {
@@ -367,7 +369,8 @@ function drawPlayer(p, sheet, actionSheet) {
   const hasActionSprite = actionFrame >= 0 && actionSheet;
   ctx.save(); ctx.translate(p.x, p.y + 112 + bob + (p.defeat ? 13 : 0));
   ctx.fillStyle = 'rgba(0,0,0,.23)'; ctx.beginPath();ctx.ellipse(0, 3, 69 - p.landing * 12, 13, 0, 0, Math.PI * 2);ctx.fill();
-  ctx.scale(p.dir * p.artFacing, 1);
+  const frameFacing = actionFrame >= 0 ? p.actionFacing[actionFrame] : 1;
+  ctx.scale(p.dir * p.artFacing * frameFacing, 1);
   const poseTilt = hasActionSprite ? 0 : p.aerial > 0 ? -.92 : p.slide > 0 ? .2 : p.chest > 0 ? -.12 : p.feint > 0 ? .2 : 0;
   const fallTilt = hasActionSprite ? 0 : p.fall > 0 ? .64 * p.dir : p.recover > 0 ? -.18 * p.dir : 0;
   ctx.rotate((p.vx / 450) * .075 + poseTilt * p.dir + (p.defeat ? .16 * p.dir : 0) + fallTilt + (p.stun > 0 ? Math.sin(p.stun * 35) * .12 : 0));
@@ -376,12 +379,14 @@ function drawPlayer(p, sheet, actionSheet) {
   const width = PLAYER_DRAW_WIDTH, height = PLAYER_SIZE;
   if (actionFrame >= 0 && actionSheet) {
     const sw = actionSheet.width / 2, sh = actionSheet.height / 2;
-    const sx = (actionFrame % 2) * sw, sy = Math.floor(actionFrame / 2) * sh;
-    ctx.drawImage(actionSheet, sx, sy, sw, sh, -width / 2, -height + 8, width, height);
+    const inset = p.actionSpriteInset;
+    const sx = (actionFrame % 2) * sw + inset, sy = Math.floor(actionFrame / 2) * sh + inset;
+    ctx.drawImage(actionSheet, sx, sy, sw - inset * 2, sh - inset * 2, -width / 2, -height + 8, width, height);
   } else if (sheet) {
     const sw = sheet.width / 2, sh = sheet.height / 2;
-    const sx = (frame % 2) * sw, sy = Math.floor(frame / 2) * sh;
-    ctx.drawImage(sheet, sx, sy, sw, sh, -width / 2, -height + 8, width, height);
+    const inset = p.baseSpriteInset;
+    const sx = (frame % 2) * sw + inset, sy = Math.floor(frame / 2) * sh + inset;
+    ctx.drawImage(sheet, sx, sy, sw - inset * 2, sh - inset * 2, -width / 2, -height + 8, width, height);
   }
   if (p.defeat) { ctx.fillStyle='#80d8ff';ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(29,-169,6,0,Math.PI*2);ctx.arc(43,-150,4,0,Math.PI*2);ctx.fill(); }
   if (p.hit > 0) { ctx.strokeStyle='#ffd45a';ctx.lineWidth=5;ctx.globalAlpha=p.hit*3;ctx.beginPath();ctx.arc(5,-164,24,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff0a2';ctx.font='bold 26px Arial';ctx.fillText('✦',21,-186);ctx.fillText('✦',-26,-174); }
