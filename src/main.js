@@ -36,6 +36,8 @@ const jardinBackground = new Image();
 jardinBackground.src = '/assets/background-jardin-botanico-valdivia.png';
 const coliseoBackground = new Image();
 coliseoBackground.src = '/assets/background-coliseo-valdivia.png';
+const dreamsBackground = new Image();
+dreamsBackground.src = '/assets/background-dreams-illustrated.png';
 
 const characterData = {
   bernardo: { name: 'BERNARDO', sheet: '/assets/bernardo-sprites-v3.png', actionSheet: '/assets/bernardo-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
@@ -344,7 +346,7 @@ function collideRod(x1, y1, x2, y2) {
   if (performance.now() - lastFrameSound > 90) { sfx('frame'); lastFrameSound = performance.now(); }
 }
 function field() {
-  const environmentImage = selectedEnvironment === 'torreon' ? torreonBackground : selectedEnvironment === 'hospital' ? hospitalBackground : selectedEnvironment === 'costanera' ? costaneraBackground : selectedEnvironment === 'plaza' ? plazaBackground : selectedEnvironment === 'jardin' ? jardinBackground : selectedEnvironment === 'coliseo' ? coliseoBackground : null;
+  const environmentImage = selectedEnvironment === 'torreon' ? torreonBackground : selectedEnvironment === 'hospital' ? hospitalBackground : selectedEnvironment === 'costanera' ? costaneraBackground : selectedEnvironment === 'plaza' ? plazaBackground : selectedEnvironment === 'jardin' ? jardinBackground : selectedEnvironment === 'coliseo' ? coliseoBackground : selectedEnvironment === 'dreams' ? dreamsBackground : null;
   if (environmentImage?.complete) ctx.drawImage(environmentImage, 0, 0, W, H);
   else { const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#0e5d45'); sky.addColorStop(1, '#08342d'); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#d9bf79'; ctx.fillRect(0, 230, W, 70); }
   drawGoal(goal.leftLine, -1); drawGoal(goal.rightLine, 1);
@@ -417,6 +419,7 @@ function drawCelebration() {
 function draw() { field(); drawPlayer(player, playerSheet, playerActionSheet);drawPlayer(cpu, rivalSheet, rivalActionSheet);drawBall();drawGoalFrontNet(goal.leftLine,-1);drawGoalFrontNet(goal.rightLine,1);drawGoalFrame(goal.leftLine,-1);drawGoalFrame(goal.rightLine,1);drawCelebration(); if(kickoff>0){ctx.fillStyle='rgba(3,30,25,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 70px Arial';ctx.fillText('¡A JUGAR!',W/2,310);} }
 function loop(now) { if(!running) return; const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();if(running)requestAnimationFrame(loop); }
 function finish() { running=false; stopMusic(); gameScreen.classList.add('hidden');resultScreen.classList.remove('hidden'); const title=score[0]>score[1]?'¡Ganaste!':score[0]===score[1]?'¡Empate!':'¡Casi!';document.querySelector('#resultTitle').textContent=title;document.querySelector('#resultScore').textContent=`${score[0]} — ${score[1]}`; }
+function returnToMenu() { running=false; stopMusic(); goalMoment=null; kickoff=0; Object.keys(keys).forEach(key=>keys[key]=false); Object.keys(keys2).forEach(key=>keys2[key]=false); gameScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); }
 
 function renderCharacterSelection() {
   document.querySelectorAll('.character').forEach(button => button.classList.toggle('selected', button.dataset.player === (selectionTarget === 'player' ? selected : selectedRival)));
@@ -429,7 +432,7 @@ document.querySelectorAll('.ball-option').forEach(button => button.addEventListe
 document.querySelectorAll('.environment-option').forEach(button => button.addEventListener('click', () => { selectedEnvironment=button.dataset.environment;document.querySelectorAll('.environment-option').forEach(b=>b.classList.toggle('selected',b===button)); }));
 musicSelect.addEventListener('change', () => { if (musicSelect.value === 'none') stopMusic(); else if (youtubeApiReady) createYoutubePlayer(); });
 soundButton.addEventListener('click', () => { soundEnabled = !soundEnabled; if (soundEnabled) { audio(); sfx('whistle'); } soundButton.textContent = soundEnabled ? '♫' : '♩'; soundButton.setAttribute('aria-label', soundEnabled ? 'Silenciar sonido' : 'Activar sonido'); soundButton.classList.toggle('active', soundEnabled); });
-document.querySelector('#playButton').addEventListener('click', startGame);document.querySelector('#againButton').addEventListener('click', startGame);
+document.querySelector('#playButton').addEventListener('click', startGame);document.querySelector('#againButton').addEventListener('click', startGame);document.querySelector('#cancelGameButton').addEventListener('click', returnToMenu);document.querySelector('#menuButton').addEventListener('click', returnToMenu);
 window.addEventListener('keydown', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest'};if(m[e.key]){keys[m[e.key]]=true;e.preventDefault();}if(localMultiplayer&&m2[e.key]){keys2[m2[e.key]]=true;e.preventDefault();} });
 window.addEventListener('keyup', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest'};if(m[e.key])keys[m[e.key]]=false;if(m2[e.key])keys2[m2[e.key]]=false; });
 document.querySelectorAll('[data-key]').forEach(b=>{const key=b.dataset.key;['pointerdown','pointerup','pointerleave','pointercancel'].forEach(event=>b.addEventListener(event,e=>{keys[key]=event==='pointerdown';e.preventDefault();}));});

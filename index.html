@@ -49,7 +49,7 @@
           <section class="environment-picker" aria-label="Selección de ambiente">
             <p class="picker-title">ELIGE AMBIENTE</p>
             <div class="environment-grid">
-              <button class="environment-option selected" data-environment="torreon"><img src="/assets/background-torreon-valdivia-v2.png" alt="Torreón de Valdivia" /><span>TORREÓN</span></button><button class="environment-option" data-environment="hospital"><img src="/assets/background-hospital-valdivia.png" alt="Hospital Regional" /><span>HOSPITAL</span></button><button class="environment-option" data-environment="costanera"><img src="/assets/background-costanera-lobos-marinos-valdivia.png" alt="Costanera con lobos marinos" /><span>COSTANERA</span></button><button class="environment-option" data-environment="plaza"><img src="/assets/background-plaza-valdivia.png" alt="Plaza de Valdivia" /><span>PLAZA</span></button><button class="environment-option" data-environment="jardin"><img src="/assets/background-jardin-botanico-valdivia.png" alt="Jardín Botánico" /><span>JARDÍN</span></button><button class="environment-option" data-environment="coliseo"><img src="/assets/background-coliseo-valdivia.png" alt="Coliseo de Valdivia" /><span>COLISEO</span></button>
+              <button class="environment-option selected" data-environment="torreon"><img src="/assets/background-torreon-valdivia-v2.png" alt="Torreón de Valdivia" /><span>TORREÓN</span></button><button class="environment-option" data-environment="hospital"><img src="/assets/background-hospital-valdivia.png" alt="Hospital Regional" /><span>HOSPITAL</span></button><button class="environment-option" data-environment="costanera"><img src="/assets/background-costanera-lobos-marinos-valdivia.png" alt="Costanera con lobos marinos" /><span>COSTANERA</span></button><button class="environment-option" data-environment="plaza"><img src="/assets/background-plaza-valdivia.png" alt="Plaza de Valdivia" /><span>PLAZA</span></button><button class="environment-option" data-environment="jardin"><img src="/assets/background-jardin-botanico-valdivia.png" alt="Jardín Botánico" /><span>JARDÍN</span></button><button class="environment-option" data-environment="coliseo"><img src="/assets/background-coliseo-valdivia.png" alt="Coliseo de Valdivia" /><span>COLISEO</span></button><button class="environment-option" data-environment="dreams"><img src="/assets/background-dreams-illustrated.png" alt="Ilustración nocturna del edificio Dreams" /><span>DREAMS</span></button>
             </div>
           </section>
           <section class="music-picker" aria-label="Selección de música de fondo">
@@ -75,11 +75,12 @@
         </div>
         <div id="gameScreen" class="game-screen hidden">
           <div class="scoreboard"><div><small id="leftName">BERNARDO</small><strong id="leftScore">0</strong></div><div class="timer" id="timer">01:30</div><div><small id="rightName">PATITO</small><strong id="rightScore">0</strong></div></div>
+          <button id="cancelGameButton" class="cancel-game-button" type="button" aria-label="Cancelar partida y volver al menú principal">✕ <span>Cancelar</span></button>
           <canvas id="game" width="1280" height="720" aria-label="Cancha de fútbol jugable"></canvas>
           <div class="game-hint">Espacio: patear / volea · F: cabecear · S: barrida · E: amague · Q: control de pecho</div>
           <div class="touch-controls" aria-label="Controles táctiles"><div><button data-key="left">←</button><button data-key="right">→</button></div><div><button data-key="jump">↑</button><button data-key="head" class="head">◉</button><button data-key="kick" class="kick">⚽</button><button data-key="slide">⇢</button><button data-key="chest">Q</button></div></div>
         </div>
-        <div id="resultScreen" class="result-screen hidden"><p class="eyebrow" id="resultLabel">FINAL DEL PARTIDO</p><h2 id="resultTitle">¡Ganaste!</h2><p id="resultScore">3 — 1</p><button id="againButton" class="play-button">JUGAR DE NUEVO <span>↻</span></button></div>
+        <div id="resultScreen" class="result-screen hidden"><p class="eyebrow" id="resultLabel">FINAL DEL PARTIDO</p><h2 id="resultTitle">¡Ganaste!</h2><p id="resultScore">3 — 1</p><div class="result-actions"><button id="againButton" class="play-button">JUGAR DE NUEVO <span>↻</span></button><button id="menuButton" class="menu-button" type="button">MENÚ PRINCIPAL <span>⌂</span></button></div></div>
       </section>
       <p class="footer-note">MVP original · Diseñado para jugarse en desktop y móvil</p>
     </main>
