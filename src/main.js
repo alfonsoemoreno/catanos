@@ -21,7 +21,7 @@ const powerName2 = document.querySelector('#powerName2');
 const soundButton = document.querySelector('#soundButton');
 const musicSelect = document.querySelector('#musicSelect');
 const musicStartButton = document.querySelector('#musicStartButton');
-let playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, ballSkin;
+let playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, playerSpecialSheet, rivalSpecialSheet, ballSkin;
 const keys = { left: false, right: false, jump: false, kick: false, head: false, slide: false, feint: false, chest: false, special: false };
 const keys2 = { left: false, right: false, jump: false, kick: false, head: false, slide: false, feint: false, chest: false, special: false };
 const W = 1280, H = 720, ground = 668;
@@ -60,34 +60,42 @@ const claroArenaBackground = new Image();
 claroArenaBackground.src = '/assets/background-claro-arena-illustrated.png';
 
 const characterData = {
-  bernardo: { name: 'BERNARDO', sheet: '/assets/bernardo-sprites-v3.png', actionSheet: '/assets/bernardo-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
-  patito: { name: 'PATITO', sheet: '/assets/patito-sprites-v3.png', actionSheet: '/assets/patito-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
-  'patito-classic': { name: 'PATITO CLASSIC', sheet: '/assets/patito-classic-sprites-v3.png', actionSheet: '/assets/patito-classic-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
-  'carlitos-run': { name: 'CARLITOS RUN', sheet: '/assets/carlitos-run-sprites-v1.png', actionSheet: '/assets/carlitos-run-action-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
-  felo: { name: 'FELO', sheet: '/assets/felo-sprites-v3.png', actionSheet: '/assets/felo-action-sprites-v3.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
-  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v2.png', actionSheet: '/assets/poncho-action-sprites-v2.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
-  gaspar: { name: 'GASPAR', sheet: '/assets/gaspar-sprites-v1-clean.png', actionSheet: '/assets/gaspar-action-sprites-v2-clean.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0 }
+  bernardo: { name: 'BERNARDO', sheet: '/assets/bernardo-sprites-v3.png', actionSheet: '/assets/bernardo-action-sprites-v2.png', specialSheet: '/assets/bernardo-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  patito: { name: 'PATITO', sheet: '/assets/patito-sprites-v3.png', actionSheet: '/assets/patito-action-sprites-v2.png', specialSheet: '/assets/patito-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
+  'patito-classic': { name: 'PATITO CLASSIC', sheet: '/assets/patito-classic-sprites-v3.png', actionSheet: '/assets/patito-classic-action-sprites-v3.png', specialSheet: '/assets/patito-classic-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] },
+  'carlitos-run': { name: 'CARLITOS RUN', sheet: '/assets/carlitos-run-sprites-v1.png', actionSheet: '/assets/carlitos-run-action-sprites-v1.png', specialSheet: '/assets/carlitos-run-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  felo: { name: 'FELO', sheet: '/assets/felo-sprites-v3.png', actionSheet: '/assets/felo-action-sprites-v3.png', specialSheet: '/assets/felo-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  poncho: { name: 'PONCHO', sheet: '/assets/poncho-sprites-v2.png', actionSheet: '/assets/poncho-action-sprites-v2.png', specialSheet: '/assets/poncho-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 14, actionSpriteInset: 14 },
+  gaspar: { name: 'GASPAR', sheet: '/assets/gaspar-sprites-v1-clean.png', actionSheet: '/assets/gaspar-action-sprites-v2-clean.png', specialSheet: '/assets/gaspar-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0 },
+  'el-macha': { name: 'EL MACHA', sheet: '/assets/el-macha-sprites-v1.png', actionSheet: '/assets/el-macha-action-sprites-v1.png', specialSheet: '/assets/el-macha-energy-sprites-v1.png', artFacing: 1, baseSpriteInset: 0, actionSpriteInset: 0, actionFacing: [1, -1, 1, 1] }
 };
 const ballSkins = {
   cuero: '/assets/balls/cuero.png', telstar: '/assets/balls/telstar.png', tango: '/assets/balls/tango.png', azteca: '/assets/balls/azteca.png',
   tricolore: '/assets/balls/tricolore.png', fever: '/assets/balls/fever.png', teamgeist: '/assets/balls/teamgeist.png', jabulani: '/assets/balls/jabulani.png',
   alrihla: '/assets/balls/alrihla.png', trionda: '/assets/balls/trionda.png'
 };
-const specialNames = { bernardo: 'REMATE BOMBA', patito: 'BARRIDA IMPERIAL', 'patito-classic': 'GOLPE CLÁSICO', 'carlitos-run': 'TURBO RUN', felo: 'TOQUE PRECISO', poncho: 'AMAGUE MAESTRO', gaspar: 'CHUTAZO FLORAL' };
-const specialProfiles = { bernardo: { speed: 760, duration: 2, boost: 1.8 }, patito: { speed: 930, duration: 1.1, boost: 1.25 }, 'patito-classic': { speed: 800, duration: 1.6, boost: 1.55 }, 'carlitos-run': { speed: 1120, duration: 1.25, boost: 1.3 }, felo: { speed: 700, duration: 2.2, boost: 1.5 }, poncho: { speed: 840, duration: 1.7, boost: 1.45 }, gaspar: { speed: 780, duration: 1.8, boost: 1.65 } };
+const specialNames = { bernardo: 'RAYO BOMBA', patito: 'RAYO IMPERIAL', 'patito-classic': 'RAYO CLÁSICO', 'carlitos-run': 'TURBO RAYO', felo: 'RAYO PRECISO', poncho: 'RAYO MAESTRO', gaspar: 'RAYO FLORAL', 'el-macha': 'RAYO NOCTURNO' };
+const specialProfiles = {
+  // beamY está medido sobre la línea luminosa del tercer cuadro de cada spritesheet.
+  bernardo: { color: '#ff5a30', glow: '#ffd35a', range: 760, duration: 1.08, stun: 2.2, beamY: -16 },
+  patito: { color: '#4bc7ff', glow: '#e8fbff', range: 830, duration: .92, stun: 2.45, beamY: -18 },
+  'patito-classic': { color: '#f5bf45', glow: '#66e1d7', range: 780, duration: 1.02, stun: 2.25, beamY: -31 },
+  'carlitos-run': { color: '#ff3e40', glow: '#ffc13d', range: 880, duration: .78, stun: 2.05, beamY: 2 },
+  felo: { color: '#ed4c4e', glow: '#ffffff', range: 740, duration: 1.18, stun: 2.35, beamY: -29 },
+  poncho: { color: '#5b89ff', glow: '#b5ddff', range: 800, duration: 1.04, stun: 2.3, beamY: -35 },
+  gaspar: { color: '#e36eea', glow: '#ffed87', range: 770, duration: 1.1, stun: 2.4, beamY: -32 },
+  'el-macha': { color: '#829cff', glow: '#e7f1ff', range: 810, duration: 1.14, stun: 2.6, beamY: -36 }
+};
 
 function updatePowerMeter() { const ready = specialPower >= 100; powerFill.style.width = `${specialPower}%`; powerName.textContent = ready ? `J1 · ¡${specialNames[selected]} LISTO!` : `J1 · ESPECIAL: ${specialNames[selected]}`; powerKey.textContent = ready ? 'R · USAR' : 'R'; powerMeter.classList.toggle('ready', ready); }
 function updatePowerMeter2() { const ready = specialPower2 >= 100; powerFill2.style.width = `${specialPower2}%`; powerName2.textContent = ready ? `J2 · ¡${specialNames[selectedRival]} LISTO!` : `J2 · ESPECIAL: ${specialNames[selectedRival]}`; powerMeter2.classList.toggle('ready', ready); }
 function chargeSpecial(amount, actor = player) { if (actor === cpu) { specialPower2 = Math.min(100, specialPower2 + amount); updatePowerMeter2(); } else { specialPower = Math.min(100, specialPower + amount); updatePowerMeter(); } }
 function useSpecial(actor = player) {
   const isSecondPlayer = actor === cpu;
-  if ((!isSecondPlayer && specialPower < 100) || (isSecondPlayer && (!localMultiplayer || specialPower2 < 100)) || !actor || actor.special > 0) return;
+  if ((!isSecondPlayer && specialPower < 100) || (isSecondPlayer && (!localMultiplayer || specialPower2 < 100)) || !actor || actor.beam) return;
   const character = isSecondPlayer ? selectedRival : selected, profile = specialProfiles[character];
   if (isSecondPlayer) specialPower2 = 0; else specialPower = 0;
-  actor.special = profile.duration; actor.vx = actor.dir * profile.speed; actor.actionCooldown = 0;
-  if (character === 'patito') actor.slide = .72;
-  if (character === 'poncho') actor.feint = .5;
-  if (character === 'felo' && Math.abs(ball.x - actor.x) < 180) { ball.vx = actor.dir * 920; ball.vy = -290; }
+  actor.beam = { time: profile.duration, max: profile.duration, profile, hit: false }; actor.vx = 0; actor.actionCooldown = profile.duration;
   cameraPulse = 1; updatePowerMeter(); updatePowerMeter2(); sfx('whistle');
 }
 
@@ -164,7 +172,7 @@ function resetPositions() {
 }
 
 function createPlayer(x, dir, data) {
-  return { x, y: ground - 112, vx: 0, vy: 0, dir, kick: 0, head: 0, headContact: 0, stun: 0, hit: 0, phase: 0, landing: 0, artFacing: data.artFacing, baseSpriteInset: data.baseSpriteInset ?? 0, actionSpriteInset: data.actionSpriteInset ?? 0, actionFacing: data.actionFacing ?? [1, 1, 1, 1], celebrate: false, defeat: false, slide: 0, feint: 0, chest: 0, aerial: 0, fall: 0, recover: 0, actionCooldown: 0, special: 0 };
+  return { x, y: ground - 112, vx: 0, vy: 0, dir, kick: 0, head: 0, headContact: 0, stun: 0, hit: 0, phase: 0, landing: 0, artFacing: data.artFacing, baseSpriteInset: data.baseSpriteInset ?? 0, actionSpriteInset: data.actionSpriteInset ?? 0, actionFacing: data.actionFacing ?? [1, 1, 1, 1], celebrate: false, defeat: false, slide: 0, feint: 0, chest: 0, aerial: 0, fall: 0, recover: 0, actionCooldown: 0, special: 0, beam: null };
 }
 
 function chromaSprite(source) {
@@ -199,8 +207,8 @@ async function startGame() {
   startMusic();
   const data = characterData[selected];
   const rivalData = characterData[selectedRival];
-  [playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, ballSkin] = await Promise.all([
-    chromaSprite(data.sheet), chromaSprite(rivalData.sheet), chromaSprite(data.actionSheet), chromaSprite(rivalData.actionSheet), chromaSprite(ballSkins[selectedBall])
+  [playerSheet, rivalSheet, playerActionSheet, rivalActionSheet, playerSpecialSheet, rivalSpecialSheet, ballSkin] = await Promise.all([
+    chromaSprite(data.sheet), chromaSprite(rivalData.sheet), chromaSprite(data.actionSheet), chromaSprite(rivalData.actionSheet), chromaSprite(data.specialSheet), chromaSprite(rivalData.specialSheet), chromaSprite(ballSkins[selectedBall])
   ]);
   leftName.textContent = data.name;
   rightName.textContent = rivalData.name;
@@ -261,7 +269,7 @@ function update(dt) {
   timeLeft = Math.max(0, timeLeft - dt); chargeSpecial(dt * (Math.abs(player.vx) > 180 ? 4.5 : 1.2)); if (localMultiplayer) chargeSpecial(dt * (Math.abs(cpu.vx) > 180 ? 4.5 : 1.2), cpu);
   const secs = Math.ceil(timeLeft); timerEl.textContent = `0${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   if (!timeLeft) return finish();
-  controlPlayer(dt); if (localMultiplayer) controlSecondPlayer(dt); else controlCpu(dt); physics(player, dt); physics(cpu, dt); ballPhysics(dt);
+  controlPlayer(dt); if (localMultiplayer) controlSecondPlayer(dt); else controlCpu(dt); updateBeam(player, cpu, dt); updateBeam(cpu, player, dt); physics(player, dt); physics(cpu, dt); ballPhysics(dt);
 }
 
 function physics(p, dt) {
@@ -274,6 +282,24 @@ function physics(p, dt) {
   if (p.stun > 0) p.vx *= Math.pow(.006, dt);
   p.phase += Math.abs(p.vx) * dt / 58; p.landing = Math.max(0, p.landing - dt * 5);
 }
+function updateBeam(actor, opponent, dt) {
+  if (!actor.beam) return;
+  const beam = actor.beam, progress = 1 - beam.time / beam.max;
+  beam.time -= dt;
+  // La carga ocupa el primer tercio; el rayo queda activo el resto del movimiento.
+  if (progress > .47 && !beam.hit) {
+    const originX = actor.x + actor.dir * 56, originY = actor.y + beam.profile.beamY;
+    const ahead = (opponent.x - originX) * actor.dir;
+    const vertical = Math.abs(opponent.y + 50 - originY);
+    if (ahead > -18 && ahead < beam.profile.range && vertical < 142) {
+      beam.hit = true; opponent.stun = beam.profile.stun; opponent.hit = .95; opponent.fall = .8;
+      opponent.vx = actor.dir * 650; opponent.vy = -320;
+      ball.vx = actor.dir * 920; ball.vy = -260;
+      cameraPulse = 1; sfx('hit');
+    }
+  }
+  if (beam.time <= 0) actor.beam = null;
+}
 function controlPlayer(dt) {
   controlHuman(player, keys, dt, 1.15);
 }
@@ -281,7 +307,7 @@ function controlSecondPlayer(dt) {
   controlHuman(cpu, keys2, dt, 1.08);
 }
 function controlHuman(actor, input, dt, power) {
-  if (actor.stun > 0 || actor.slide > 0 || actor.feint > 0) return;
+  if (actor.stun > 0 || actor.slide > 0 || actor.feint > 0 || actor.beam) return;
   const speed = 450;
   if (input.left) { actor.vx = -speed; actor.dir = -1; } else if (input.right) { actor.vx = speed; actor.dir = 1; } else actor.vx *= Math.pow(.001, dt);
   if (input.jump && actor.y >= ground - 113) actor.vy = -710;
@@ -293,7 +319,7 @@ function controlHuman(actor, input, dt, power) {
   if (input.head && actor.head <= 0) headBall(actor, power);
 }
 function controlCpu(dt) {
-  if (cpu.stun > 0 || cpu.slide > 0 || cpu.feint > 0) return;
+  if (cpu.stun > 0 || cpu.slide > 0 || cpu.feint > 0 || cpu.beam) return;
   const dx = ball.x - cpu.x; cpu.dir = dx > 0 ? 1 : -1;
   cpu.vx = Math.abs(dx) > 44 ? Math.sign(dx) * 280 : 0;
   if (ball.y < 360 && cpu.y >= ground - 113 && Math.random() < .025) cpu.vy = -660;
@@ -447,13 +473,17 @@ function drawGoalFrontNet(line, side) {
   for(let xx=x+7;xx<x+width;xx+=10){ctx.beginPath();ctx.moveTo(xx,goal.top);ctx.lineTo(xx,goal.bottom);ctx.stroke();}
   ctx.restore();
 }
-function drawPlayer(p, sheet, actionSheet) {
+function drawPlayer(p, sheet, actionSheet, specialSheet) {
   const moving = Math.min(1, Math.abs(p.vx) / 260);
   const cheer = p.celebrate && goalMoment ? Math.abs(Math.sin((1.65 - goalMoment.time) * 10)) * 24 : 0;
   const bob = Math.sin(p.phase) * 5 * moving - p.landing * 7 - cheer;
   const frame = p.slide > .02 || p.kick > .035 ? 3 : (p.head > .035 || p.chest > .035 || p.y < ground - 113 || p.celebrate) ? 2 : moving > .14 ? 1 : 0;
   const actionFrame = p.chest > .035 ? 0 : p.slide > .035 ? 1 : p.feint > .035 ? 2 : (p.aerial > .035 || p.fall > .035 || p.recover > .035) ? 3 : -1;
   const hasActionSprite = actionFrame >= 0 && actionSheet;
+  // El último cuarto del poder es descanso limpio con el sprite normal; así ningún píxel
+  // de la hoja de disparo puede quedar pegado al personaje al terminar el rayo.
+  const specialProgress = p.beam ? 1 - p.beam.time / p.beam.max : 1;
+  const hasSpecialSprite = Boolean(p.beam && specialSheet && specialProgress < .75);
   ctx.save(); ctx.translate(p.x, p.y + 112 + bob + (p.defeat ? 13 : 0));
   ctx.fillStyle = 'rgba(0,0,0,.23)'; ctx.beginPath();ctx.ellipse(0, 3, 69 - p.landing * 12, 13, 0, 0, Math.PI * 2);ctx.fill();
   if (p.special > 0) {
@@ -465,15 +495,21 @@ function drawPlayer(p, sheet, actionSheet) {
     for (let i = 0; i < 8; i++) { const x = Math.sin(p.special * 18 + i * 5) * (58 + i * 7), y = -132 + ((i * 31 + p.special * 160) % 142); ctx.fillRect(x - 3, y - 3, 6, 6); }
     ctx.restore();
   }
-  const frameFacing = actionFrame >= 0 ? p.actionFacing[actionFrame] : 1;
+  // Los sprites del especial son una secuencia independiente: no heredan giros ni poses de acciones previas.
+  const frameFacing = hasSpecialSprite ? 1 : actionFrame >= 0 ? p.actionFacing[actionFrame] : 1;
   ctx.scale(p.dir * p.artFacing * frameFacing, 1);
-  const poseTilt = hasActionSprite ? 0 : p.aerial > 0 ? -.92 : p.slide > 0 ? .2 : p.chest > 0 ? -.12 : p.feint > 0 ? .2 : 0;
-  const fallTilt = hasActionSprite ? 0 : p.fall > 0 ? .64 * p.dir : p.recover > 0 ? -.18 * p.dir : 0;
+  const poseTilt = hasSpecialSprite || hasActionSprite ? 0 : p.aerial > 0 ? -.92 : p.slide > 0 ? .2 : p.chest > 0 ? -.12 : p.feint > 0 ? .2 : 0;
+  const fallTilt = hasSpecialSprite || hasActionSprite ? 0 : p.fall > 0 ? .64 * p.dir : p.recover > 0 ? -.18 * p.dir : 0;
   ctx.rotate((p.vx / 450) * .075 + poseTilt * p.dir + (p.defeat ? .16 * p.dir : 0) + fallTilt + (p.stun > 0 ? Math.sin(p.stun * 35) * .12 : 0));
   if (!hasActionSprite && p.slide > 0) ctx.scale(1.12, .82);
   if (!hasActionSprite && p.chest > 0) ctx.scale(.96, 1.05);
   const width = PLAYER_DRAW_WIDTH, height = PLAYER_SIZE;
-  if (actionFrame >= 0 && actionSheet) {
+  if (hasSpecialSprite) {
+    const specialFrame = Math.min(2, Math.floor(specialProgress * 4));
+    const sw = specialSheet.width / 2, sh = specialSheet.height / 2;
+    const sx = (specialFrame % 2) * sw, sy = Math.floor(specialFrame / 2) * sh;
+    ctx.drawImage(specialSheet, sx, sy, sw, sh, -width / 2, -height + 8, width, height);
+  } else if (actionFrame >= 0 && actionSheet) {
     const sw = actionSheet.width / 2, sh = actionSheet.height / 2;
     const inset = p.actionSpriteInset;
     const sx = (actionFrame % 2) * sw + inset, sy = Math.floor(actionFrame / 2) * sh + inset;
@@ -485,8 +521,60 @@ function drawPlayer(p, sheet, actionSheet) {
     ctx.drawImage(sheet, sx, sy, sw - inset * 2, sh - inset * 2, -width / 2, -height + 8, width, height);
   }
   if (p.defeat) { ctx.fillStyle='#80d8ff';ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(29,-169,6,0,Math.PI*2);ctx.arc(43,-150,4,0,Math.PI*2);ctx.fill(); }
+  if (p.stun > .55) { ctx.save(); ctx.globalAlpha = .65 + Math.sin(performance.now() / 70) * .2; ctx.fillStyle = '#fff0a2'; ctx.font = 'bold 25px Arial'; const spin = performance.now() / 130; for (let i = 0; i < 3; i++) { const a = spin + i * 2.1; ctx.fillText('✦', Math.cos(a) * 28 - 7, -190 + Math.sin(a) * 12); } ctx.restore(); }
   if (p.hit > 0) { ctx.strokeStyle='#ffd45a';ctx.lineWidth=5;ctx.globalAlpha=p.hit*3;ctx.beginPath();ctx.arc(5,-164,24,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff0a2';ctx.font='bold 26px Arial';ctx.fillText('✦',21,-186);ctx.fillText('✦',-26,-174); }
   if (frame === 3 || p.head > .035 || p.chest > .035) { ctx.strokeStyle=frame === 3 ? '#fff8ae' : p.chest > .035 ? '#ffdfa1' : '#c6f6ff';ctx.lineWidth=9;ctx.lineCap='round';ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(80,-27);ctx.lineTo(130,-6);ctx.stroke(); }
+  ctx.restore();
+}
+function drawBeam(p) {
+  if (!p.beam) return;
+  const beam = p.beam, progress = 1 - beam.time / beam.max;
+  const charge = Math.min(1, progress / .28), fire = Math.max(0, (progress - .28) / .72);
+  const ox = p.x + p.dir * 58, oy = p.y + 48;
+  const pulse = .7 + Math.sin(performance.now() / 42) * .3;
+  ctx.save(); ctx.globalCompositeOperation = 'screen';
+  if (charge < 1) {
+    const radius = 18 + charge * 40 + pulse * 7;
+    const halo = ctx.createRadialGradient(ox, oy, 3, ox, oy, radius);
+    halo.addColorStop(0, '#fff'); halo.addColorStop(.25, beam.profile.glow); halo.addColorStop(1, 'transparent');
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(ox, oy, radius, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 14; i++) { const a = i * .9 + performance.now() / 150; const r = radius + 10 + (i % 3) * 9; ctx.fillStyle = beam.profile.color; ctx.fillRect(ox + Math.cos(a) * r - 3, oy + Math.sin(a) * r - 3, 6, 6); }
+  } else {
+    const length = beam.profile.range * Math.min(1, fire * 2.8), endX = ox + p.dir * length;
+    ctx.globalAlpha = .28 + pulse * .25; ctx.strokeStyle = beam.profile.glow; ctx.lineWidth = 54 + pulse * 18; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(endX, oy + Math.sin(performance.now() / 55) * 6); ctx.stroke();
+    ctx.globalAlpha = .95; ctx.strokeStyle = beam.profile.color; ctx.lineWidth = 27 + pulse * 7; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(endX, oy); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(endX, oy); ctx.stroke();
+    for (let i = 0; i < 20; i++) { const t = (i / 20 + performance.now() / 900) % 1; const x = ox + p.dir * length * t, y = oy + Math.sin(i * 7 + performance.now() / 50) * (18 + i % 4 * 8); ctx.fillStyle = i % 2 ? beam.profile.color : beam.profile.glow; ctx.fillRect(x - 4, y - 4, 8, 8); }
+  }
+  ctx.restore();
+}
+function drawBeamExtension(p, opponent) {
+  if (!p.beam) return;
+  const beam = p.beam, progress = 1 - beam.time / beam.max;
+  // Solo se extiende mientras se muestra el tercer frame: el rayo nace exactamente
+  // donde se recorta el sprite y desaparece antes del descanso limpio.
+  if (progress < .47 || progress >= .82) return;
+  const startX = p.x + p.dir * 102, startY = p.y + beam.profile.beamY;
+  const ahead = (opponent.x - startX) * p.dir;
+  const endX = ahead > 0 ? opponent.x - p.dir * 28 : (p.dir > 0 ? W - 36 : 36);
+  const length = Math.max(28, Math.abs(endX - startX));
+  const life = Math.sin(((progress - .47) / .35) * Math.PI);
+  const pulse = .86 + Math.sin(performance.now() / 38) * .14;
+  ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.lineCap = 'butt';
+  // Halo suave que se solapa con el borde del frame, sin tapar al personaje.
+  ctx.globalAlpha = .22 + life * .26; ctx.strokeStyle = beam.profile.glow; ctx.lineWidth = 42 * pulse;
+  ctx.beginPath(); ctx.moveTo(startX - p.dir * 7, startY); ctx.lineTo(endX, startY); ctx.stroke();
+  ctx.globalAlpha = .92; ctx.strokeStyle = beam.profile.color; ctx.lineWidth = 21 * pulse;
+  ctx.beginPath(); ctx.moveTo(startX - p.dir * 4, startY); ctx.lineTo(endX, startY); ctx.stroke();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 6 * pulse;
+  ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, startY); ctx.stroke();
+  // Chispas animadas para fundir el tramo generado con el rayo del sprite.
+  for (let i = 0; i < 18; i++) {
+    const t = (i / 18 + performance.now() / 1100) % 1;
+    const x = startX + p.dir * length * t, y = startY + Math.sin(i * 3.7 + performance.now() / 55) * (8 + (i % 3) * 5);
+    ctx.fillStyle = i % 2 ? beam.profile.glow : beam.profile.color; ctx.fillRect(x - 3, y - 3, 6, 6);
+  }
+  if (ahead > 0) { ctx.globalAlpha = .35 + life * .45; ctx.fillStyle = beam.profile.glow; ctx.beginPath(); ctx.arc(endX, startY, 22 + pulse * 8, 0, Math.PI * 2); ctx.fill(); }
   ctx.restore();
 }
 function drawBall() {
@@ -512,7 +600,7 @@ function draw() {
   if (replay) { drawReplay(); return; }
   const zoom = 1 + cameraPulse * .075;
   ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(zoom, zoom); ctx.translate(-W / 2, -H / 2);
-  field(); drawPlayer(player, playerSheet, playerActionSheet); drawPlayer(cpu, rivalSheet, rivalActionSheet); drawBall(); drawGoalFrontNet(goal.leftLine,-1); drawGoalFrontNet(goal.rightLine,1); drawGoalFrame(goal.leftLine,-1); drawGoalFrame(goal.rightLine,1); drawCelebration();
+  field(); drawPlayer(player, playerSheet, playerActionSheet, playerSpecialSheet); drawPlayer(cpu, rivalSheet, rivalActionSheet, rivalSpecialSheet); drawBeamExtension(player, cpu); drawBeamExtension(cpu, player); drawBall(); drawGoalFrontNet(goal.leftLine,-1); drawGoalFrontNet(goal.rightLine,1); drawGoalFrame(goal.leftLine,-1); drawGoalFrame(goal.rightLine,1); drawCelebration();
   if (kickoff > 0) { ctx.fillStyle='rgba(3,30,25,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 70px Arial';ctx.fillText('¡A JUGAR!',W/2,310); }
   ctx.restore();
   captureReplayFrame();
