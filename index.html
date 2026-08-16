@@ -77,6 +77,40 @@
           <button id="playButton" class="play-button">JUGAR PARTIDO <span>→</span></button>
           <div class="instructions"><span>← → o A D <b>Mover</b></span><span>↑ / W <b>Saltar</b></span><span>ESPACIO <b>Patear / volea</b></span><span>F <b>Cabecear</b></span><span>S <b>Barrida</b></span><span>E <b>Amague</b></span><span>Q <b>Control de pecho</b></span></div>
         </div>
+        <section id="versusScreen" class="versus-screen hidden" aria-label="Presentación del partido">
+          <button id="backToSetupButton" class="versus-back" type="button">← VOLVER A SELECCIÓN</button>
+          <div id="versusStage" class="intro-stage intro-vs-stage">
+            <p class="versus-kicker">CATANOS CUP · PARTIDO DE EXHIBICIÓN</p>
+            <div class="versus-fighters">
+              <article class="versus-player versus-player-one">
+                <span class="versus-side">JUGADOR 1</span>
+                <img id="versusPlayerImage" src="" alt="" />
+                <h2 id="versusPlayerName">BERNARDO</h2>
+              </article>
+              <div class="versus-mark" aria-hidden="true"><span>VS</span><small>90 SEGUNDOS</small></div>
+              <article class="versus-player versus-player-two">
+                <span id="versusRivalLabel" class="versus-side">CPU</span>
+                <img id="versusRivalImage" src="" alt="" />
+                <h2 id="versusRivalName">PATITO</h2>
+              </article>
+            </div>
+            <p class="intro-status">PRESENTANDO JUGADORES <i></i></p>
+          </div>
+          <div id="controlsStage" class="intro-stage intro-controls-stage hidden" aria-live="polite">
+            <p class="controls-kicker">CATANOS CUP · SISTEMA DE JUEGO</p>
+            <h2>CONTROLES</h2>
+            <p class="controls-subtitle">MEMORIZA TUS MOVIMIENTOS. EL PARTIDO COMIENZA EN SEGUNDOS.</p>
+            <section class="command-guide" aria-labelledby="commandGuideTitle">
+              <div class="guide-heading"><p id="commandGuideTitle">JUGADORES EN CANCHA</p><span>DOMINA EL PARTIDO</span></div>
+              <div class="command-columns">
+                <article class="command-column"><h3>J1 · <span>A D / FLECHAS</span></h3><div><kbd>A</kbd><kbd>D</kbd><small>MOVER</small></div><div><kbd>W</kbd><small>SALTAR</small></div><div><kbd>ESPACIO</kbd><small>PATEAR / VOLEA</small></div><div><kbd>F</kbd><small>CABECEAR</small></div><div><kbd>S</kbd><small>BARRIDA</small></div><div><kbd>Q</kbd><small>CONTROL DE PECHO</small></div><div><kbd>R</kbd><small>PODER ESPECIAL</small></div></article>
+                <article id="playerTwoCommands" class="command-column"><h3>CPU · <span>RIVAL AUTOMÁTICO</span></h3><p class="cpu-guide">Juega contra la CPU. Cambia a “2 JUGADORES” en la selección para activar estos controles.</p></article>
+              </div>
+            </section>
+            <p class="auto-start">INICIANDO PARTIDO <i></i></p>
+            <button id="beginMatchButton" class="play-button versus-start" type="button">JUGAR AHORA <span>→</span></button>
+          </div>
+        </section>
         <div id="gameScreen" class="game-screen hidden">
           <div class="scoreboard"><div><small id="leftName">BERNARDO</small><strong id="leftScore">0</strong></div><div class="timer" id="timer">01:30</div><div><small id="rightName">PATITO</small><strong id="rightScore">0</strong></div></div>
           <div class="power-meter power-meter-one" aria-live="polite"><span id="powerName">J1 · ESPECIAL: REMATE BOMBA</span><div class="power-track"><i id="powerFill"></i></div><b id="powerKey">R</b></div>

@@ -3,6 +3,7 @@ import './style.css';
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d');
 const startScreen = document.querySelector('#startScreen');
+const versusScreen = document.querySelector('#versusScreen');
 const gameScreen = document.querySelector('#gameScreen');
 const resultScreen = document.querySelector('#resultScreen');
 const leftName = document.querySelector('#leftName');
@@ -33,9 +34,18 @@ const replayCanvas = document.createElement('canvas');
 replayCanvas.width = 320; replayCanvas.height = 180;
 const replayContext = replayCanvas.getContext('2d');
 const skipReplayButton = document.querySelector('#skipReplayButton');
+const versusPlayerName = document.querySelector('#versusPlayerName');
+const versusRivalName = document.querySelector('#versusRivalName');
+const versusPlayerImage = document.querySelector('#versusPlayerImage');
+const versusRivalImage = document.querySelector('#versusRivalImage');
+const versusRivalLabel = document.querySelector('#versusRivalLabel');
+const playerTwoCommands = document.querySelector('#playerTwoCommands');
+const versusStage = document.querySelector('#versusStage');
+const controlsStage = document.querySelector('#controlsStage');
 let player, cpu, ball;
 let audioContext, soundEnabled = false, lastBounceSound = 0, lastFrameSound = 0;
 let youtubePlayer, youtubeApiReady = false, pendingMusicStart = false;
+let introTimers = [];
 // Los postes quedan al borde: la cancha útil gana amplitud sin perder el volumen de la red.
 const goal = { leftLine: 56, rightLine: 1224, top: 332, bottom: 668, depth: 56 };
 const torreonBackground = new Image();
@@ -203,6 +213,7 @@ async function prepareSelectionImages() {
 }
 
 async function startGame() {
+  clearIntroTimers();
   if (soundEnabled) audio();
   startMusic();
   const data = characterData[selected];
@@ -213,8 +224,42 @@ async function startGame() {
   leftName.textContent = data.name;
   rightName.textContent = rivalData.name;
   clearTimeout(replaySafetyTimeout); replaySafetyTimeout = null; score = [0, 0]; matchStats = { shots: [0, 0] }; specialPower = 0; specialPower2 = 0; updatePowerMeter(); updatePowerMeter2(); powerMeter2.classList.toggle('hidden', !localMultiplayer); timeLeft = 90; replay = null; replayFrames.length = 0; cameraPulse = 0; scoreboard.classList.remove('hidden'); gameScreen.classList.remove('replay-active'); skipReplayButton.classList.add('hidden'); last = performance.now(); running = true;
-  startScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); gameScreen.classList.remove('hidden'); musicStartButton.classList.toggle('hidden', musicSelect.value === 'none');
+  startScreen.classList.add('hidden'); versusScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); gameScreen.classList.remove('hidden'); musicStartButton.classList.toggle('hidden', musicSelect.value === 'none');
   resetPositions(); sfx('whistle'); requestAnimationFrame(loop);
+}
+
+async function showMatchIntro() {
+  clearIntroTimers();
+  const playerData = characterData[selected];
+  const rivalData = characterData[selectedRival];
+  const [playerPortrait, rivalPortrait] = await Promise.all([
+    chromaSprite(`/assets/versus/${selected}-vs.png`),
+    chromaSprite(`/assets/versus/${selectedRival}-vs.png`)
+  ]);
+  versusPlayerName.textContent = playerData.name;
+  versusRivalName.textContent = rivalData.name;
+  versusPlayerImage.src = playerPortrait.toDataURL('image/png');
+  versusRivalImage.src = rivalPortrait.toDataURL('image/png');
+  versusPlayerImage.alt = playerData.name;
+  versusRivalImage.alt = rivalData.name;
+  versusRivalLabel.textContent = localMultiplayer ? 'JUGADOR 2' : 'CPU';
+  playerTwoCommands.innerHTML = localMultiplayer
+    ? '<h3>J2 · <span>J L / TECLADO</span></h3><div><kbd>J</kbd><kbd>L</kbd><small>MOVER</small></div><div><kbd>I</kbd><small>SALTAR</small></div><div><kbd>O</kbd><small>PATEAR / VOLEA</small></div><div><kbd>P</kbd><small>CABECEAR</small></div><div><kbd>K</kbd><small>BARRIDA</small></div><div><kbd>Y</kbd><small>CONTROL DE PECHO</small></div><div><kbd>H</kbd><small>PODER ESPECIAL</small></div>'
+    : '<h3>CPU · <span>RIVAL AUTOMÁTICO</span></h3><p class="cpu-guide">Juega contra la CPU. Cambia a “2 JUGADORES” en la selección para activar estos controles.</p>';
+  startScreen.classList.add('hidden');
+  resultScreen.classList.add('hidden');
+  gameScreen.classList.add('hidden');
+  versusScreen.classList.remove('hidden');
+  versusStage.classList.remove('hidden');
+  controlsStage.classList.add('hidden');
+  introTimers.push(setTimeout(showControlsIntro, 3400));
+}
+
+function clearIntroTimers() { introTimers.forEach(clearTimeout); introTimers = []; }
+function showControlsIntro() {
+  versusStage.classList.add('hidden');
+  controlsStage.classList.remove('hidden');
+  introTimers.push(setTimeout(startGame, 5200));
 }
 
 function addGoal(who) {
@@ -607,7 +652,7 @@ function draw() {
 }
 function loop(now) { if(!running) return; const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();if(running)requestAnimationFrame(loop); }
 function finish() { running=false; stopMusic(); gameScreen.classList.add('hidden');resultScreen.classList.remove('hidden'); const title=score[0]>score[1]?'¡Ganaste!':score[0]===score[1]?'¡Empate!':'¡Casi!';document.querySelector('#resultTitle').textContent=title;document.querySelector('#resultScore').textContent=`${score[0]} — ${score[1]}`;document.querySelector('#playerShots').textContent=matchStats.shots[0];document.querySelector('#rivalShots').textContent=matchStats.shots[1];document.querySelector('#playerGoals').textContent=score[0];document.querySelector('#rivalGoals').textContent=score[1]; }
-function returnToMenu() { running=false; stopMusic(); clearTimeout(replaySafetyTimeout); replaySafetyTimeout=null; goalMoment=null; replay=null; replayFrames.length=0; kickoff=0; scoreboard.classList.remove('hidden'); gameScreen.classList.remove('replay-active'); musicStartButton.classList.add('hidden'); skipReplayButton.classList.add('hidden'); Object.keys(keys).forEach(key=>keys[key]=false); Object.keys(keys2).forEach(key=>keys2[key]=false); gameScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); }
+function returnToMenu() { clearIntroTimers(); running=false; stopMusic(); clearTimeout(replaySafetyTimeout); replaySafetyTimeout=null; goalMoment=null; replay=null; replayFrames.length=0; kickoff=0; scoreboard.classList.remove('hidden'); gameScreen.classList.remove('replay-active'); musicStartButton.classList.add('hidden'); skipReplayButton.classList.add('hidden'); Object.keys(keys).forEach(key=>keys[key]=false); Object.keys(keys2).forEach(key=>keys2[key]=false); gameScreen.classList.add('hidden'); versusScreen.classList.add('hidden'); resultScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); }
 
 function renderCharacterSelection() {
   document.querySelectorAll('.character').forEach(button => button.classList.toggle('selected', button.dataset.player === (selectionTarget === 'player' ? selected : selectedRival)));
@@ -621,7 +666,7 @@ document.querySelectorAll('.ball-option').forEach(button => button.addEventListe
 document.querySelectorAll('.environment-option').forEach(button => button.addEventListener('click', () => { selectedEnvironment=button.dataset.environment;document.querySelectorAll('.environment-option').forEach(b=>b.classList.toggle('selected',b===button)); }));
 musicSelect.addEventListener('change', () => { if (musicSelect.value === 'none') stopMusic(); else if (youtubeApiReady) createYoutubePlayer(); musicStartButton.classList.toggle('hidden', musicSelect.value === 'none'); });
 soundButton.addEventListener('click', () => { soundEnabled = !soundEnabled; if (soundEnabled) { audio(); sfx('whistle'); } soundButton.textContent = soundEnabled ? '♫' : '♩'; soundButton.setAttribute('aria-label', soundEnabled ? 'Silenciar sonido' : 'Activar sonido'); soundButton.classList.toggle('active', soundEnabled); });
-document.querySelector('#playButton').addEventListener('click', startGame);document.querySelector('#againButton').addEventListener('click', startGame);document.querySelector('#cancelGameButton').addEventListener('click', returnToMenu);document.querySelector('#menuButton').addEventListener('click', returnToMenu);musicStartButton.addEventListener('click', startMusic);skipReplayButton.addEventListener('click', endReplay);
+document.querySelector('#playButton').addEventListener('click', showMatchIntro);document.querySelector('#againButton').addEventListener('click', showMatchIntro);document.querySelector('#beginMatchButton').addEventListener('click', startGame);document.querySelector('#backToSetupButton').addEventListener('click', () => { clearIntroTimers(); versusScreen.classList.add('hidden'); startScreen.classList.remove('hidden'); });document.querySelector('#cancelGameButton').addEventListener('click', returnToMenu);document.querySelector('#menuButton').addEventListener('click', returnToMenu);musicStartButton.addEventListener('click', startMusic);skipReplayButton.addEventListener('click', endReplay);
 window.addEventListener('keydown', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest',r:'special',R:'special'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest',h:'special',H:'special'};if(m[e.key]){keys[m[e.key]]=true;e.preventDefault();}if(localMultiplayer&&m2[e.key]){keys2[m2[e.key]]=true;e.preventDefault();} });
 window.addEventListener('keyup', e=>{ const m={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'jump',w:'jump',W:'jump',' ':'kick',f:'head',F:'head',s:'slide',S:'slide',e:'feint',E:'feint',q:'chest',Q:'chest',r:'special',R:'special'};const m2={j:'left',J:'left',l:'right',L:'right',i:'jump',I:'jump',o:'kick',O:'kick',p:'head',P:'head',k:'slide',K:'slide',u:'feint',U:'feint',y:'chest',Y:'chest',h:'special',H:'special'};if(m[e.key])keys[m[e.key]]=false;if(m2[e.key])keys2[m2[e.key]]=false; });
 document.querySelectorAll('[data-key]').forEach(b=>{const key=b.dataset.key;['pointerdown','pointerup','pointerleave','pointercancel'].forEach(event=>b.addEventListener(event,e=>{keys[key]=event==='pointerdown';e.preventDefault();}));});
